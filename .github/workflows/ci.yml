@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [ '**' ] # Запуск на пуш в ЛЮБУЮ ветку
+  pull_request:
+    branches: [ '**' ] # Запуск на создание ПР в ЛЮБУЮ ветку
+
+jobs:
+  quality:
+    name: Code Quality & Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black isort flake8 mypy pytest pytest-asyncio
+
+      - name: Check code formatting with Black
+        run: black --check --diff .
+
+      - name: Check import sorting with isort
+        run: isort --check-only --diff .
+
+      - name: Lint with Flake8
+        run: flake8 . --count --show-source --statistics
+
+      - name: Check types with mypy
+        run: mypy . --ignore-missing-imports
+
+      - name: Run tests with pytest
+        run: pytest -v
